@@ -1157,6 +1157,7 @@ class TaggedLineDocument:
 
         """
         self.source = source
+        self.custom_tag = custom_tag
 
     def __iter__(self):
         """Iterate through the lines in the source.
