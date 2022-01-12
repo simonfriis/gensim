@@ -1130,16 +1130,20 @@ class TaggedBrownCorpus:
 
 
 class TaggedLineDocument:
-    def __init__(self, source):
+    def __init__(self, source, custom_tag=True):
         """Iterate over a file that contains documents: one line = :class:`~gensim.models.doc2vec.TaggedDocument` object.
 
-        Words are expected to be already preprocessed and separated by whitespace. Document tags are constructed
-        automatically from the document line number (each document gets a unique integer tag).
+        Words are expected to be already preprocessed and separated by whitespace. Simfri changed
+        default behavior so that first token in the line is used as the document tag in lieu of
+        the line number. Previous = document tags are constructed automatically from the document
+        line number (each document gets a unique integer tag).
 
         Parameters
         ----------
         source : string or a file-like object
             Path to the file on disk, or an already-open file object (must support `seek(0)`).
+        custom_tag : bool, optional
+            First token in the line is used as a tag in lieu of the document number
 
         Examples
         --------
@@ -1172,5 +1176,11 @@ class TaggedLineDocument:
         except AttributeError:
             # If it didn't work like a file, use it as a string filename
             with utils.open(self.source, 'rb') as fin:
-                for item_no, line in enumerate(fin):
-                    yield TaggedDocument(utils.to_unicode(line).split(), [item_no])
+                if self.custom_tag:
+                    for line in fin:
+                        words = utils.to_unicode(line).split()
+                        tag = words.pop(0)
+                        yield TaggedDocument(words, [tag])
+                else:
+                    for item_no, line in enumerate(fin):
+                        yield TaggedDocument(utils.to_unicode(line).split(), [item_no])
